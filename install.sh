@@ -13,7 +13,7 @@ readonly BRIGHT_VARIANTS=("" "light" "dark")
 
 if command -v lsb_release &> /dev/null; then
   Distributor_ID=$(lsb_release -i)
-  if [[ "${Distributor_ID}" == "Distributor ID:	elementary" || "${Distributor_ID}" == "Distributor ID:	Elementary" ]]; then
+  if [[ "${Distributor_ID}" == "Distributor ID: elementary" || "${Distributor_ID}" == "Distributor ID:  Elementary" ]]; then
     ICON_VERSION="elementary"
   else
     ICON_VERSION="normal"
@@ -187,6 +187,14 @@ install_theme() {
       else
         sed -i "s/#5294e2/${theme_color}/g" "${THEME_DIR}/scalable/devices/"*.svg "${THEME_DIR}/32/devices/"*.svg
       fi
+
+      # Use the per-variant icons from src/scalable/places/<variant>-*.svg when they exist.
+      # They replace the generated default-*.svg files and are installed as-is (no recoloring),
+      # so manual edits to them are picked up. Variants without such files are unaffected.
+      for variant_icon in "${SRC_DIR}/src/scalable/places/$1-"*.svg; do
+        [[ -e "${variant_icon}" ]] || continue
+        cp -f "${variant_icon}" "${THEME_DIR}/scalable/places/default-${variant_icon##*/$1-}"
+      done
     fi
 
     cp -r "${SRC_DIR}"/links/{16,22,24,32,scalable,symbolic}                     "${THEME_DIR}"
